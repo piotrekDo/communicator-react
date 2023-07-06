@@ -5,6 +5,7 @@ import { AuthResponse } from '../model/Auth';
 interface UserState {
   user: User | undefined;
   login: (authRes: AuthResponse) => void;
+  setStompUserName: (stompName: string) => void;
 }
 
 const useUserState = create<UserState>(set => ({
@@ -18,6 +19,11 @@ const useUserState = create<UserState>(set => ({
         jwtToken: res.jwtToken,
         jwtExpiresAt: new Date(res.jwtExpiresAt),
       },
+    })),
+  setStompUserName: name =>
+    set(store => ({
+      ...store,
+      user: store.user ? { ...store.user, stompUsername: name } : undefined,
     })),
 }));
 
