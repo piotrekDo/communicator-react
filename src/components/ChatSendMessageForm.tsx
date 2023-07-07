@@ -1,12 +1,10 @@
-import React from 'react';
 import { useForm } from 'react-hook-form';
 import { User } from '../model/User';
-import { IPublishParams, StompHeaders } from '@stomp/stompjs';
-import { Button, FormControl, Input } from '@chakra-ui/react';
+import { Button, FormControl, HStack, Input } from '@chakra-ui/react';
 
 interface Props {
   user: User;
-  publish: ((params: IPublishParams) => void) | undefined;
+  publish: (message: PublicMessageRaw) => void;
 }
 
 export const ChatSendMessageForm = ({ user, publish }: Props) => {
@@ -22,27 +20,17 @@ export const ChatSendMessageForm = ({ user, publish }: Props) => {
   } = useForm<FormData>();
 
   const handleSubmitPublicMessage = (data: FormData) => {
-    if (!user) return;
+    if (!user || !user.stompUsername) return;
     if (!publish) {
       console.error('socket.publish is undefined.');
       return;
     }
-    const message = {
+    const message: PublicMessageRaw = {
       senderName: user.username,
       senderStompName: user.stompUsername,
       message: data.message,
     };
-
-    console.log("MESSSAGE");
-    console.log("MESSSAGE");
-    console.log("MESSSAGE");
-    console.log("MESSSAGE");
-    console.log(message)
-    console.log("MESSSAGE");
-    console.log("MESSSAGE");
-    console.log("MESSSAGE");
-    console.log("MESSSAGE");
-    publish({ destination: '/websocket/global', body: JSON.stringify(message) });
+    publish(message);
   };
 
   return (
@@ -52,10 +40,30 @@ export const ChatSendMessageForm = ({ user, publish }: Props) => {
         reset();
       })}
     >
-      <FormControl>
-        <Input type='text' placeholder='message' {...register('message')} />
-      </FormControl>
-      <Button type='submit'>Submit</Button>
+              <HStack w={'100%'} h={'50px'} borderRadius={'30px'}>
+                <FormControl w={'90%'} h={'100%'} mx={0}>
+                  <Input
+                    w={'100%'}
+                    h={'100%'}
+                    px={'15px'}
+                    borderRadius={'30px 0 0 30px'}
+                    type='text'
+                    placeholder='message'
+                    {...register('message')}
+                  />
+                </FormControl>
+                <Button
+                  bg={'green.500'}
+                  type='submit'
+                  h={'100%'}
+                  w={'120px'}
+                  mx={0}
+                  borderRadius={'0 30px 30px 0'}
+                  color={'white'}
+                >
+                  Submit
+                </Button>
+              </HStack>
     </form>
   );
 };
