@@ -8,9 +8,9 @@ import './index.css';
 import { ChakraBaseProvider, extendBaseTheme } from '@chakra-ui/react';
 
 ReactDOM.createRoot(document.getElementById('root') as HTMLElement).render(
-  <React.StrictMode>
+  // <React.StrictMode>
     <ChakraBaseProvider>
       <RouterProvider router={router} />
     </ChakraBaseProvider>
-  </React.StrictMode>
+  // </React.StrictMode>
 );

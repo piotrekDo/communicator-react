@@ -1,13 +1,16 @@
 import { useForm } from 'react-hook-form';
 import { User } from '../model/User';
 import { Button, FormControl, HStack, Input } from '@chakra-ui/react';
+import usePrivateMessagesState from '../state/usePrivateMessagesState';
 
 interface Props {
   user: User;
-  publish: (message: PublicMessageRaw) => void;
+  chatWindow: string;
+  publish: (message: PublicMessageRaw | PrivateMessageRaw) => void;
 }
 
-export const ChatSendMessageForm = ({ user, publish }: Props) => {
+export const ChatSendMessageForm = ({ user, chatWindow, publish }: Props) => {
+  const {addMessageToPrivateChat} = usePrivateMessagesState();
   interface FormData {
     message: string;
   }
@@ -25,11 +28,25 @@ export const ChatSendMessageForm = ({ user, publish }: Props) => {
       console.error('socket.publish is undefined.');
       return;
     }
-    const message: PublicMessageRaw = {
-      senderName: user.username,
-      senderStompName: user.stompUsername,
-      message: data.message,
-    };
+    let message;
+    if(chatWindow === 'Public') {
+      message = {
+        senderName: user.username,
+        senderStompName: user.stompUsername,
+        message: data.message,
+      };
+    } else {
+      message = {
+        senderName: user.username,
+        senderStompName: user.stompUsername,
+        receiverStompName: chatWindow,
+        message: data.message,
+      }
+      addMessageToPrivateChat(message);
+      console.log('Wyslana priv ')
+      console.log(message)
+    }
+
     publish(message);
   };
 

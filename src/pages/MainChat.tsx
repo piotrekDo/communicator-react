@@ -7,16 +7,32 @@ import usePublicChatState from '../state/usePublicChatState';
 import { useEffect, useState } from 'react';
 import { ChatSendMessageForm } from '../components/ChatSendMessageForm';
 import { ChatWindow } from '../components/ChatWindow';
+import { ChatChannelList } from '../components/ChatChannelList';
+import usePrivateMessagesState from '../state/usePrivateMessagesState';
 
 export const MainChat = () => {
   const navigate = useNavigate();
   const { user, setStompUserName } = useUserState();
+  const [chatWindow, setChatWindow] = useState<string>('Public');
   const { messages, addPublicMessage } = usePublicChatState();
+  const { privateChats, addMessageToPrivateChat } = usePrivateMessagesState();
   const [isSocketInitialized, setIsSocketInitialized] = useState(false);
 
-  const socket = useWebSocket(user!.username, setStompUserName, (m: any) => addPublicMessage(JSON.parse(m.body)));
-  const handleSendPublicMessage = (message: PublicMessageRaw) => {
-    socket!.publish({ destination: '/websocket/global', body: JSON.stringify(message) });
+  const socket = useWebSocket(
+    user!.username,
+    setStompUserName,
+    (m: any) => addPublicMessage(JSON.parse(m.body)),
+    (m: any) => {
+      console.log(JSON.parse(m.body))
+      addMessageToPrivateChat(JSON.parse(m.body))
+    }
+  );
+  const handleSendMessage = (message: PublicMessageRaw) => {
+    if (chatWindow === 'Public') {
+      socket!.publish({ destination: '/websocket/global', body: JSON.stringify(message) });
+    } else {
+      socket!.publish({ destination: '/websocket/priv', body: JSON.stringify(message) });
+    }
   };
 
   if (!user) {
@@ -42,13 +58,18 @@ export const MainChat = () => {
         }}
         h={'90%'}
       >
-        <VStack bg={'blackAlpha.400'} w={'300px'} h={'100%'} borderRadius={'20px 0 0 20px'}>
-          <Box>dsadsa</Box>
-        </VStack>
-        <VStack bg={'blackAlpha.400'} w={'90%'} h={'100%'} borderRadius={'0 20px 20px 0'} p={'20px'}>
-          <ChatWindow messages={messages} />
+        <ChatChannelList setChannel={setChatWindow} currentChatWindow={chatWindow}/>
+        <VStack w={'90%'} h={'100%'} borderRadius={'0 20px 20px 0'} p={'20px'}>
+          <ChatWindow
+            messages={
+              chatWindow === 'Public'
+                ? messages
+                : privateChats.find(chat => chat.stompUsername === chatWindow)?.privateMessages || []
+            }
+            setChannel={setChatWindow}
+          />
           <Box w={'100%'} borderRadius={'30px'}>
-            <ChatSendMessageForm user={user} publish={handleSendPublicMessage} />
+            <ChatSendMessageForm user={user} publish={handleSendMessage} chatWindow={chatWindow}/>
           </Box>
         </VStack>
       </HStack>

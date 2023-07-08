@@ -11,3 +11,19 @@ interface PublicMessage {
   message: string;
   time: Date;
 }
+
+interface PrivateMessageRaw {
+  senderName: string;
+  senderStompName: string;
+  receiverStompName: string;
+  message: string;
+  time?: string;
+}
+
+interface PrivateMessage {
+  senderName: string;
+  senderStompName: string;
+  receiverStopName: string;
+  message: string;
+  time: Date;
+}

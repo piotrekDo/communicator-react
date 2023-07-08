@@ -1,7 +1,12 @@
 import { useEffect, useRef, useState } from 'react';
 import { Stomp, Client, Frame } from '@stomp/stompjs';
 
-const useWebSocket = (userName: string, setStompUserName: (name: string) => void, onMessageReceivedGlobal: any) => {
+const useWebSocket = (
+  userName: string,
+  setStompUserName: (name: string) => void,
+  onMessageReceivedGlobal: any,
+  onMessageReceivedPrivate: any
+) => {
   const clientRef = useRef<Client | null>(null);
   const [webSocketClient, setWebSocketClient] = useState<Client | null>(null);
 
@@ -13,8 +18,10 @@ const useWebSocket = (userName: string, setStompUserName: (name: string) => void
 
       stompClient.connect({}, (frame: Frame) => {
         if (!clientRef.current) return;
+        const stompName = (frame.headers as { 'user-name': string })['user-name']
         clientRef.current.subscribe('/global', onMessageReceivedGlobal);
-        setStompUserName((frame.headers as { 'user-name': string })['user-name'])
+        clientRef.current.subscribe(`/user/priv`, onMessageReceivedPrivate);
+        setStompUserName(stompName);
         setWebSocketClient(clientRef.current);
       });
     };

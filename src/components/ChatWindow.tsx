@@ -3,10 +3,11 @@ import { ChatMessageContainer } from './ChatMessageContainer';
 import { useEffect, useRef } from 'react';
 
 interface Props {
-  messages: PublicMessage[];
+  messages: PublicMessage[] | PrivateMessage[];
+  setChannel: (channel: string) => void;
 }
 
-export const ChatWindow = ({ messages }: Props) => {
+export const ChatWindow = ({ messages, setChannel }: Props) => {
   const chatWindowRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -29,6 +30,7 @@ export const ChatWindow = ({ messages }: Props) => {
             msg={m}
             prevName={index === 0 ? '' : tab[index - 1].senderName}
             prevTime={index === 0 ? null : tab[index - 1].time}
+            setChannel={setChannel}
           />
         ))}
     </VStack>
