@@ -1,4 +1,4 @@
-import { VStack } from '@chakra-ui/react';
+import { Box, VStack } from '@chakra-ui/react';
 import { ChatMessageContainer } from './ChatMessageContainer';
 import { useEffect, useRef } from 'react';
 
@@ -23,6 +23,9 @@ export const ChatWindow = ({ messages, setChannel }: Props) => {
   };
   return (
     <VStack w={'100%'} h={'100%'} overflowY={'scroll'} ref={chatWindowRef}>
+      {messages.length === 0 && (<VStack h={'60%'} justifyContent={'center'}>
+        <Box color={'white'} fontSize={'4rem'}><em>Brak wiadomości</em></Box>
+      </VStack>)}
       {messages.length > 0 &&
         messages.map((m, index, tab) => (
           <ChatMessageContainer

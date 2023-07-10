@@ -19,7 +19,6 @@ export const ChatMessageContainer = ({ msg, prevName, prevTime, setChannel }: Pr
   const prevMsgTime = prevTime ? prevTime : new Date('');
 
   const msgTime = msg.time;
-  console.log(msgTime)
   const hours = msgTime.getHours().toString().padStart(2, '0'); // Zwraca godzinę jako liczba (0-23)
   const minutes = msgTime.getMinutes().toString().padStart(2, '0');
   const seconds = msgTime.getSeconds().toString().padStart(2, '0');

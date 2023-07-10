@@ -43,8 +43,6 @@ export const ChatSendMessageForm = ({ user, chatWindow, publish }: Props) => {
         message: data.message,
       }
       addMessageToPrivateChat(message);
-      console.log('Wyslana priv ')
-      console.log(message)
     }
 
     publish(message);

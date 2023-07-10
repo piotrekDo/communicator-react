@@ -23,7 +23,6 @@ export const MainChat = () => {
     setStompUserName,
     (m: any) => addPublicMessage(JSON.parse(m.body)),
     (m: any) => {
-      console.log(JSON.parse(m.body))
       addMessageToPrivateChat(JSON.parse(m.body))
     }
   );
