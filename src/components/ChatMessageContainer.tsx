@@ -36,7 +36,7 @@ export const ChatMessageContainer = ({ msg, prevName, prevTime, setChannel }: Pr
       )}
       <Box width={'fit-content'} alignSelf={isUser ? 'end' : 'start'}>
         {((!isUser && prevName != msg.senderName) || (!isUser && displayTime)) && (
-          <Button color={'wheat'} pt={'20px'} ml={5} onClick={() => {
+          <Button color={'wheat'} pt={'20px'} mb={'5px'} onClick={() => {
             addPrivateChat(msg.senderStompName, msg.senderName);
             setChannel(msg.senderStompName);
           }}>
@@ -49,7 +49,9 @@ export const ChatMessageContainer = ({ msg, prevName, prevTime, setChannel }: Pr
           borderRadius={'20px'}
           py={2}
           px={5}
-          bg={isUser ? 'whatsapp.600' : 'facebook.700'}
+          // bg={isUser ? 'whatsapp.600' : 'facebook.700'}
+          bg={isUser ? 'whatsapp.700' : 'facebook.700'}
+
         >
           {msg.message}
         </Text>

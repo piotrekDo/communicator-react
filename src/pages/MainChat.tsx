@@ -51,7 +51,7 @@ export const MainChat = () => {
   if (!isSocketInitialized) return <div>LOADING</div>;
 
   return (
-    <VStack bg={'linkedin.400'} w={'100vw'} h={'100vh'}>
+    <VStack bg={'blackAlpha.800'} w={'100vw'} h={'100vh'}>
       <Navbar />
       <HStack
         p={'20px'}
@@ -62,7 +62,7 @@ export const MainChat = () => {
         h={'90%'}
       >
         <ChatChannelList setChannel={setChatWindow} currentChatWindow={chatWindow} />
-        <VStack w={'90%'} h={'100%'} borderRadius={'0 20px 20px 0'} p={'20px'}>
+        <VStack bg={'blackAlpha.900'} w={'90%'} h={'100%'} borderRadius={'20px'} p={'20px'}>
           <ChatWindow
             messages={
               chatWindow === 'Public'

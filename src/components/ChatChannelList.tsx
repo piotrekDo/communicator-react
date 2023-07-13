@@ -17,7 +17,7 @@ export const ChatChannelList = ({ setChannel, currentChatWindow }: Props) => {
   }
 
   return (
-    <VStack w={'300px'} h={'100%'} borderRadius={'20px 0 0 20px'}>
+    <VStack bg={'blackAlpha.900'} w={'300px'} h={'100%'} borderRadius={'20px'}>
       <Box
         position={'relative'}
         bgColor={currentChatWindow === 'Public' ? 'whatsapp.100' : 'whatsapp.500'}
