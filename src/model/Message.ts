@@ -1,4 +1,5 @@
 interface PublicMessageRaw {
+  type?: string;
   senderName: string;
   senderStompName: string;
   message: string;
@@ -6,6 +7,7 @@ interface PublicMessageRaw {
 }
 
 interface PrivateMessageRaw {
+  type?: string;
   senderName: string;
   senderStompName: string;
   receiverStompName: string;
@@ -14,6 +16,7 @@ interface PrivateMessageRaw {
 }
 
 interface PublicMessage {
+  type?: string;
   senderName: string;
   senderStompName: string;
   message: string;
@@ -21,6 +24,7 @@ interface PublicMessage {
 }
 
 interface PrivateMessage {
+  type?: string;
   senderName: string;
   senderStompName: string;
   receiverStopName: string;

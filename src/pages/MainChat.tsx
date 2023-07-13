@@ -14,7 +14,7 @@ export const MainChat = () => {
   const navigate = useNavigate();
   const { user, setStompUserName } = useUserState();
   const [chatWindow, setChatWindow] = useState<string>('Public');
-  const { messages, addPublicMessage } = usePublicChatState();
+  const { messages, typingUsers: typingUsersPublic, addPublicMessage } = usePublicChatState();
   const { privateChats, addMessageToPrivateChat } = usePrivateMessagesState();
   const [isSocketInitialized, setIsSocketInitialized] = useState(false);
 
@@ -22,7 +22,11 @@ export const MainChat = () => {
     user!.username,
     user!.jwtToken,
     setStompUserName,
-    (m: any) => addPublicMessage(JSON.parse(m.body)),
+    (m: any) => {
+      const msg = JSON.parse(m.body);
+      console.log(msg);
+      addPublicMessage(msg);
+    },
     (m: any) => {
       addMessageToPrivateChat(JSON.parse(m.body));
     }
@@ -69,6 +73,7 @@ export const MainChat = () => {
                 ? messages
                 : privateChats.find(chat => chat.stompUsername === chatWindow)?.privateMessages || []
             }
+            typingUsers={chatWindow === 'Public' ? typingUsersPublic : []}
             setChannel={setChatWindow}
           />
           <Box w={'100%'} borderRadius={'30px'}>

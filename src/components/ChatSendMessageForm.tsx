@@ -1,30 +1,56 @@
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { User } from '../model/User';
 import { Button, FormControl, HStack, Input } from '@chakra-ui/react';
 import usePrivateMessagesState from '../state/usePrivateMessagesState';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 
 interface Props {
   user: User;
   chatWindow: string;
   publish: (message: PublicMessageRaw | PrivateMessageRaw) => void;
 }
-
-
+interface FormData {
+  message: string;
+}
 
 export const ChatSendMessageForm = ({ user, chatWindow, publish }: Props) => {
   const { addMessageToPrivateChat } = usePrivateMessagesState();
-  const [formInput, setFormInput] = useState<string>('');
+  const { register, handleSubmit, reset, control } = useForm<FormData>();
+  const messageValue = useWatch({
+    control,
+    name: 'message',
+    defaultValue: '',
+  });
+  const [typingStatus, setTypingStatus] = useState<'ilde' | 'typing'>('ilde');
 
-  interface FormData {
-    message: string;
-  }
-  const { register, handleSubmit, reset } = useForm<FormData>();
+  useEffect(() => {
+    if (!user || !user.stompUsername) return;
+    if (messageValue !== '' && typingStatus === 'ilde') {
+      const message = {
+        type: 'SYSTEM',
+        senderName: user.username,
+        senderStompName: user.stompUsername,
+        message: 'typing-start',
+      };
+      setTypingStatus('typing');
+      publish(message);
+    }
+    if (messageValue === '' && typingStatus === 'typing') {
+      const systemMessage = {
+        type: 'SYSTEM',
+        senderName: user.username,
+        senderStompName: user.stompUsername,
+        message: 'typing-stop',
+      };
+      setTypingStatus('ilde');
+      publish(systemMessage);
+    }
+  }, [messageValue]);
 
   const handleSubmitPublicMessage = (data: FormData) => {
     if (!user || !user.stompUsername) return;
     if (!publish) {
-      console.error('socket.publish is undefined.');
+      console.error('socket.publish jest niezdefiniowane.');
       return;
     }
     let message;
@@ -43,17 +69,27 @@ export const ChatSendMessageForm = ({ user, chatWindow, publish }: Props) => {
       };
       addMessageToPrivateChat(message);
     }
-console.log(message)
+
+    const systemMessage = {
+      type: 'SYSTEM',
+      senderName: user.username,
+      senderStompName: user.stompUsername,
+      message: 'typing-stop',
+    };
+    setTypingStatus('ilde');
     publish(message);
+    publish(systemMessage);
+  };
+
+  const handleFormSubmit = (data: FormData) => {
+    if (data.message.trim() !== '') {
+      handleSubmitPublicMessage(data);
+    }
+    reset();
   };
 
   return (
-    <form
-      onSubmit={handleSubmit(data => {
-        handleSubmitPublicMessage(data);
-        reset();
-      })}
-    >
+    <form onSubmit={handleSubmit(handleFormSubmit)}>
       <HStack
         bg={'blackAlpha.700'}
         color={'white'}
@@ -81,13 +117,13 @@ console.log(message)
             px={'15px'}
             borderRadius={'30px 0 0 30px'}
             type='text'
-            placeholder='message'
-            {...(register('message'))}
+            placeholder='Wiadomość'
+            {...register('message')}
           />
         </FormControl>
-        {formInput == '' && (
+        {messageValue !== '' && (
           <Button type='submit' h={'100%'} w={'120px'} mx={0} borderRadius={'0 30px 30px 0'} color={'white'}>
-            Submit
+            Wyślij
           </Button>
         )}
       </HStack>

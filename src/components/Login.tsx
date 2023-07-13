@@ -37,17 +37,17 @@ export const Login = () => {
   };
 
   return (
-    <Box bg={'messenger.400'} p={'20px'} borderRadius={'30px'}>
+    <Box bg={'blackAlpha.900'} color={'white'} p={'20px'} borderRadius={'30px'}>
       <form onSubmit={handleSubmit(onSubmitDataHandler)}>
         <Heading fontSize={'3rem'}>Zaloguj się</Heading>
         <VStack width={'100%'} marginTop={'20px'}>
           <FormControl>
             <FormLabel fontSize={'1.5rem'}>Imię</FormLabel>
-            <Input {...register('username')} type='text' />
+            <Input color={'black'} {...register('username')} type='text' />
           </FormControl>
           <FormControl>
             <FormLabel fontSize={'1.5rem'}>Hasło</FormLabel>
-            <Input {...register('userPassword')} type='password' />
+            <Input color={'black'} {...register('userPassword')} type='password' />
           </FormControl>
           <Flex width={'100%'} justifyContent={'space-between'}>
             <Text fontSize={'1.3rem'} textColor={'red.600'} w={'100%'} textAlign={'center'}>
@@ -55,7 +55,8 @@ export const Login = () => {
             </Text>
           </Flex>
           <Button
-            bg={'linkedin.400'}
+            bg={'blackAlpha.600'}
+            border={'2px solid white'}
             borderRadius={'20px'}
             w={'60%'}
             isLoading={isLoading}

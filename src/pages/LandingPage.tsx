@@ -12,7 +12,7 @@ export const LandingPage = () => {
   }
 
   return (
-    <Flex bg={'blue.200'} w={'100vw'} h={'100vh'} justifyContent={'center'} alignItems={'center'}>
+    <Flex bg={'blackAlpha.800'} w={'100vw'} h={'100vh'} justifyContent={'center'} alignItems={'center'}>
       <Login />
     </Flex>
   );

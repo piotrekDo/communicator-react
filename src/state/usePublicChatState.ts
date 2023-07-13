@@ -2,32 +2,44 @@ import { create } from 'zustand';
 
 interface PublicChatState {
   messages: PublicMessage[];
+  typingUsers: string[];
   addPublicMessage: (msg: PublicMessageRaw) => void;
   unreadPubMessages: number;
   clearUnreadPubMessages: () => void;
 }
 
+
 const usePublicChatState = create<PublicChatState>(set => ({
   messages: [],
+  typingUsers: [],
   unreadPubMessages: 0,
-  addPublicMessage: msg =>
+  addPublicMessage: msg => {
+    if (msg.type && msg.type === 'SYSTEM') {
+      set(store => ({
+        ...store,
+        typingUsers: msg.message === 'typing-start' ? [...store.typingUsers, msg.senderName] : [...store.typingUsers.filter(u => u !== msg.senderName)]
+      }));
+    } else {
+      set(store => ({
+        ...store,
+        messages: [
+          ...store.messages,
+          {
+            senderName: msg.senderName,
+            senderStompName: msg.senderStompName,
+            message: msg.message,
+            time: msg.time ? new Date(msg.time) : new Date()
+          }
+        ],
+        unreadPubMessages: store.unreadPubMessages + 1
+      }));
+    }
+  },
+  clearUnreadPubMessages: () =>
     set(store => ({
       ...store,
-      messages: [
-        ...store.messages,
-        {
-          senderName: msg.senderName,
-          senderStompName: msg.senderStompName,
-          message: msg.message,
-          time: msg.time ? new Date(msg.time) : new Date(),
-        },
-      ],
-      unreadPubMessages: store.unreadPubMessages + 1,
-    })),
-  clearUnreadPubMessages: () => set(store => ({
-    ...store,
-    unreadPubMessages: 0,
-  })),
+      unreadPubMessages: 0
+    }))
 }));
 
 export default usePublicChatState;
