@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
-import { Stomp, Client, Frame } from '@stomp/stompjs';
+import { Stomp, Client, Frame, CompatClient } from '@stomp/stompjs';
 
 const useWebSocket = (
   userName: string,
+  jwtToken: string,
   setStompUserName: (name: string) => void,
   onMessageReceivedGlobal: any,
   onMessageReceivedPrivate: any
 ) => {
-  const clientRef = useRef<Client | null>(null);
+  const clientRef = useRef<CompatClient | null>(null);
   const [webSocketClient, setWebSocketClient] = useState<Client | null>(null);
 
   useEffect(() => {
@@ -16,14 +17,20 @@ const useWebSocket = (
       const stompClient = Stomp.over(socket);
       clientRef.current = stompClient;
 
-      stompClient.connect({}, (frame: Frame) => {
-        if (!clientRef.current) return;
-        const stompName = (frame.headers as { 'user-name': string })['user-name']
-        clientRef.current.subscribe('/global', onMessageReceivedGlobal);
-        clientRef.current.subscribe(`/user/priv`, onMessageReceivedPrivate);
-        setStompUserName(stompName);
-        setWebSocketClient(clientRef.current);
-      });
+      const headers = {
+        Authorization: 'Bearer ' + jwtToken
+      }
+
+      clientRef.current.connect( headers,
+        (frame: Frame) => {
+          if (!clientRef.current) return;
+          const stompName = (frame.headers as { 'user-name': string })['user-name'];
+          clientRef.current.subscribe('/global', onMessageReceivedGlobal, headers);
+          clientRef.current.subscribe(`/user/priv`, onMessageReceivedPrivate, headers);
+          setStompUserName(stompName);
+          setWebSocketClient(clientRef.current);
+        }
+      );
     };
 
     initializeWebSocket();

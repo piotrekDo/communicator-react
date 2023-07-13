@@ -5,7 +5,6 @@ import { AuthRequest } from '../model/Auth';
 import LoginService from '../service/LoginService';
 import useUserState from '../state/useUserState';
 import { useNavigate } from 'react-router-dom';
-import useWebSocket from '../hook/useWebSocket';
 
 interface FormData {
   username: string;

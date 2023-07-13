@@ -20,17 +20,21 @@ export const MainChat = () => {
 
   const socket = useWebSocket(
     user!.username,
+    user!.jwtToken,
     setStompUserName,
     (m: any) => addPublicMessage(JSON.parse(m.body)),
     (m: any) => {
-      addMessageToPrivateChat(JSON.parse(m.body))
+      addMessageToPrivateChat(JSON.parse(m.body));
     }
   );
   const handleSendMessage = (message: PublicMessageRaw) => {
+    const headers = {
+      Authorization: 'Bearer ' + user!.jwtToken,
+    };
     if (chatWindow === 'Public') {
-      socket!.publish({ destination: '/websocket/global', body: JSON.stringify(message) });
+      socket!.publish({ destination: '/websocket/global', headers, body: JSON.stringify(message) });
     } else {
-      socket!.publish({ destination: '/websocket/priv', body: JSON.stringify(message) });
+      socket!.publish({ destination: '/websocket/priv', headers, body: JSON.stringify(message) });
     }
   };
 
@@ -57,7 +61,7 @@ export const MainChat = () => {
         }}
         h={'90%'}
       >
-        <ChatChannelList setChannel={setChatWindow} currentChatWindow={chatWindow}/>
+        <ChatChannelList setChannel={setChatWindow} currentChatWindow={chatWindow} />
         <VStack w={'90%'} h={'100%'} borderRadius={'0 20px 20px 0'} p={'20px'}>
           <ChatWindow
             messages={
@@ -68,7 +72,7 @@ export const MainChat = () => {
             setChannel={setChatWindow}
           />
           <Box w={'100%'} borderRadius={'30px'}>
-            <ChatSendMessageForm user={user} publish={handleSendMessage} chatWindow={chatWindow}/>
+            <ChatSendMessageForm user={user} publish={handleSendMessage} chatWindow={chatWindow} />
           </Box>
         </VStack>
       </HStack>
