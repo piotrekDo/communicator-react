@@ -1,31 +1,31 @@
-import { useForm, useWatch } from 'react-hook-form';
 import { User } from '../model/User';
 import { Button, FormControl, HStack, Input } from '@chakra-ui/react';
 import usePrivateMessagesState from '../state/usePrivateMessagesState';
-import { useEffect, useState } from 'react';
+import { FormEvent, useEffect, useState } from 'react';
 
 interface Props {
   user: User;
   chatWindow: string;
+  inputField: string;
+  inputRef: React.RefObject<HTMLInputElement>;
   publish: (message: PublicMessageRaw | PrivateMessageRaw) => void;
 }
-interface FormData {
-  message: string;
-}
 
-export const ChatSendMessageForm = ({ user, chatWindow, publish }: Props) => {
+export const ChatSendMessageForm = ({ user, chatWindow, inputField, inputRef, publish }: Props) => {
   const { addMessageToPrivateChat } = usePrivateMessagesState();
-  const { register, handleSubmit, reset, control } = useForm<FormData>();
-  const messageValue = useWatch({
-    control,
-    name: 'message',
-    defaultValue: '',
-  });
+  const [input, setInput] = useState(inputField);
   const [typingStatus, setTypingStatus] = useState<'ilde' | 'typing'>('ilde');
 
   useEffect(() => {
+    console.log('input param ' + inputField);
+    setInput(inputField);
+    if (inputField !== '') setTypingStatus('typing');
+    else setTypingStatus('ilde');
+  }, [inputField]);
+
+  useEffect(() => {
     if (!user || !user.stompUsername) return;
-    if (messageValue !== '' && typingStatus === 'ilde') {
+    if (input !== '' && typingStatus === 'ilde') {
       const message = {
         type: 'SYSTEM',
         senderName: user.username,
@@ -35,7 +35,7 @@ export const ChatSendMessageForm = ({ user, chatWindow, publish }: Props) => {
       setTypingStatus('typing');
       publish(message);
     }
-    if (messageValue === '' && typingStatus === 'typing') {
+    if (input === '' && typingStatus === 'typing') {
       const systemMessage = {
         type: 'SYSTEM',
         senderName: user.username,
@@ -45,9 +45,9 @@ export const ChatSendMessageForm = ({ user, chatWindow, publish }: Props) => {
       setTypingStatus('ilde');
       publish(systemMessage);
     }
-  }, [messageValue]);
+  }, [input]);
 
-  const handleSubmitPublicMessage = (data: FormData) => {
+  const handleSubmitPublicMessage = (data: string) => {
     if (!user || !user.stompUsername) return;
     if (!publish) {
       console.error('socket.publish jest niezdefiniowane.');
@@ -58,14 +58,14 @@ export const ChatSendMessageForm = ({ user, chatWindow, publish }: Props) => {
       message = {
         senderName: user.username,
         senderStompName: user.stompUsername,
-        message: data.message,
+        message: data,
       };
     } else {
       message = {
         senderName: user.username,
         senderStompName: user.stompUsername,
         receiverStompName: chatWindow,
-        message: data.message,
+        message: data,
       };
       addMessageToPrivateChat(message);
     }
@@ -81,15 +81,16 @@ export const ChatSendMessageForm = ({ user, chatWindow, publish }: Props) => {
     publish(systemMessage);
   };
 
-  const handleFormSubmit = (data: FormData) => {
-    if (data.message.trim() !== '') {
-      handleSubmitPublicMessage(data);
+  const handleFormSubmit = (data: FormEvent<HTMLFormElement>) => {
+    data.preventDefault();
+    if (input.trim() !== '') {
+      handleSubmitPublicMessage(input);
     }
-    reset();
+    setInput('');
   };
 
   return (
-    <form onSubmit={handleSubmit(handleFormSubmit)}>
+    <form onSubmit={e => handleFormSubmit(e)}>
       <HStack
         bg={'blackAlpha.700'}
         color={'white'}
@@ -118,10 +119,12 @@ export const ChatSendMessageForm = ({ user, chatWindow, publish }: Props) => {
             borderRadius={'30px 0 0 30px'}
             type='text'
             placeholder='Wiadomość'
-            {...register('message')}
+            value={input}
+            onChange={e => setInput(e.target.value)}
+            ref={inputRef}
           />
         </FormControl>
-        {messageValue !== '' && (
+        {input !== '' && (
           <Button type='submit' h={'100%'} w={'120px'} mx={0} borderRadius={'0 30px 30px 0'} color={'white'}>
             Wyślij
           </Button>

@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Navbar } from '../components/Navbar';
 import useWebSocket from '../hook/useWebSocket';
 import usePublicChatState from '../state/usePublicChatState';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { ChatSendMessageForm } from '../components/ChatSendMessageForm';
 import { ChatWindow } from '../components/ChatWindow';
 import { ChatChannelList } from '../components/ChatChannelList';
@@ -13,8 +13,15 @@ import usePrivateMessagesState from '../state/usePrivateMessagesState';
 export const MainChat = () => {
   const navigate = useNavigate();
   const { user, setStompUserName } = useUserState();
-  const [chatWindow, setChatWindow] = useState<string>('Public');
-  const { messages, typingUsers: typingUsersPublic, addPublicMessage } = usePublicChatState();
+  const [currentChatWindow, setChatWindow] = useState<string>('Public');
+  const chatInputRef = useRef<HTMLInputElement>(null);
+  const {
+    messages,
+    typingUsers: typingUsersPublic,
+    input: inputPublic,
+    setInput: setInputPublic,
+    addPublicMessage,
+  } = usePublicChatState();
   const { privateChats, addMessageToPrivateChat } = usePrivateMessagesState();
   const [isSocketInitialized, setIsSocketInitialized] = useState(false);
 
@@ -35,11 +42,16 @@ export const MainChat = () => {
     const headers = {
       Authorization: 'Bearer ' + user!.jwtToken,
     };
-    if (chatWindow === 'Public') {
+    if (currentChatWindow === 'Public') {
       socket!.publish({ destination: '/websocket/global', headers, body: JSON.stringify(message) });
     } else {
       socket!.publish({ destination: '/websocket/priv', headers, body: JSON.stringify(message) });
     }
+  };
+
+  const handleSwitchChannel = (channelName: string) => {
+    if(currentChatWindow === 'Public') setInputPublic(chatInputRef.current?.value || '');
+    setChatWindow(channelName);
   };
 
   if (!user) {
@@ -65,19 +77,25 @@ export const MainChat = () => {
         }}
         h={'90%'}
       >
-        <ChatChannelList setChannel={setChatWindow} currentChatWindow={chatWindow} />
+        <ChatChannelList setChannel={handleSwitchChannel} currentChatWindow={currentChatWindow} />
         <VStack bg={'blackAlpha.900'} w={'90%'} h={'100%'} borderRadius={'20px'} p={'20px'}>
           <ChatWindow
             messages={
-              chatWindow === 'Public'
+              currentChatWindow === 'Public'
                 ? messages
-                : privateChats.find(chat => chat.stompUsername === chatWindow)?.privateMessages || []
+                : privateChats.find(chat => chat.stompUsername === currentChatWindow)?.privateMessages || []
             }
-            typingUsers={chatWindow === 'Public' ? typingUsersPublic : []}
+            typingUsers={currentChatWindow === 'Public' ? typingUsersPublic : []}
             setChannel={setChatWindow}
           />
           <Box w={'100%'} borderRadius={'30px'}>
-            <ChatSendMessageForm user={user} publish={handleSendMessage} chatWindow={chatWindow} />
+            <ChatSendMessageForm
+              user={user}
+              publish={handleSendMessage}
+              chatWindow={currentChatWindow}
+              inputField={currentChatWindow === 'Public' ? inputPublic : 'priv'}
+              inputRef={chatInputRef}
+            />
           </Box>
         </VStack>
       </HStack>
