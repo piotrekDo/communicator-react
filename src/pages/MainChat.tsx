@@ -35,6 +35,8 @@ export const MainChat = () => {
       addPublicMessage(msg);
     },
     (m: any) => {
+      const msg = JSON.parse(m.body);
+      console.log(msg);
       addMessageToPrivateChat(JSON.parse(m.body));
     }
   );
@@ -50,7 +52,11 @@ export const MainChat = () => {
   };
 
   const handleSwitchChannel = (channelName: string) => {
-    if(currentChatWindow === 'Public') setInputPublic(chatInputRef.current?.value || '');
+    if(currentChatWindow === 'Public') {
+      setInputPublic(chatInputRef.current?.value || '');
+    }else {
+      privateChats.get(currentChatWindow)?.setInput(chatInputRef.current?.value || '')
+    }
     setChatWindow(channelName);
   };
 
@@ -83,9 +89,9 @@ export const MainChat = () => {
             messages={
               currentChatWindow === 'Public'
                 ? messages
-                : privateChats.find(chat => chat.stompUsername === currentChatWindow)?.privateMessages || []
+                : privateChats.get(currentChatWindow)?.privateMessages || []
             }
-            typingUsers={currentChatWindow === 'Public' ? typingUsersPublic : []}
+            typingUsers={currentChatWindow === 'Public' ? typingUsersPublic : privateChats.get(currentChatWindow)?.typingUsers || []}
             setChannel={setChatWindow}
           />
           <Box w={'100%'} borderRadius={'30px'}>
@@ -93,7 +99,7 @@ export const MainChat = () => {
               user={user}
               publish={handleSendMessage}
               chatWindow={currentChatWindow}
-              inputField={currentChatWindow === 'Public' ? inputPublic : 'priv'}
+              inputField={currentChatWindow === 'Public' ? inputPublic : privateChats.get(currentChatWindow)?.input || ''}
               inputRef={chatInputRef}
             />
           </Box>

@@ -13,15 +13,14 @@ interface Props {
 
 export const ChatSendMessageForm = ({ user, chatWindow, inputField, inputRef, publish }: Props) => {
   const { addMessageToPrivateChat } = usePrivateMessagesState();
-  const [input, setInput] = useState(inputField);
+  const [input, setInput] = useState('');
   const [typingStatus, setTypingStatus] = useState<'ilde' | 'typing'>('ilde');
-
+ 
   useEffect(() => {
-    console.log('input param ' + inputField);
     setInput(inputField);
     if (inputField !== '') setTypingStatus('typing');
     else setTypingStatus('ilde');
-  }, [inputField]);
+  }, [chatWindow]);
 
   useEffect(() => {
     if (!user || !user.stompUsername) return;
@@ -30,6 +29,7 @@ export const ChatSendMessageForm = ({ user, chatWindow, inputField, inputRef, pu
         type: 'SYSTEM',
         senderName: user.username,
         senderStompName: user.stompUsername,
+        receiverStompName: chatWindow,
         message: 'typing-start',
       };
       setTypingStatus('typing');
@@ -40,6 +40,7 @@ export const ChatSendMessageForm = ({ user, chatWindow, inputField, inputRef, pu
         type: 'SYSTEM',
         senderName: user.username,
         senderStompName: user.stompUsername,
+        receiverStompName: chatWindow,
         message: 'typing-stop',
       };
       setTypingStatus('ilde');
@@ -74,6 +75,7 @@ export const ChatSendMessageForm = ({ user, chatWindow, inputField, inputRef, pu
       type: 'SYSTEM',
       senderName: user.username,
       senderStompName: user.stompUsername,
+      receiverStompName: chatWindow,
       message: 'typing-stop',
     };
     setTypingStatus('ilde');

@@ -53,7 +53,7 @@ export const ChatChannelList = ({ setChannel, currentChatWindow }: Props) => {
           </Circle>
         )}
       </Box>
-      {privateChats.map(chat => (
+      {Array.from(privateChats.values()).map(chat => (
         <PrivateChatChannelContainer
           key={chat.stompUsername}
           chatChannel={chat}

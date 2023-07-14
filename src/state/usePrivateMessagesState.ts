@@ -3,20 +3,23 @@ import { create } from 'zustand';
 export interface PrivateChat {
   stompUsername: string;
   username: string;
+  typingUsers: string[];
+  input: string;
+  setInput: (data: string) => void;
   privateMessages: PrivateMessage[];
   unreadMessages: number;
   clearUnreadMessages: () => void;
 }
 
 interface PrivateMessagesState {
-  privateChats: PrivateChat[];
+  privateChats: Map<string, PrivateChat>;
   addPrivateChat: (stompUsername: string, username: string) => void;
   removePrivateChat: (stompUsername: string) => void;
   addMessageToPrivateChat: (msg: PrivateMessageRaw) => void;
 }
 
-const contains = (table: PrivateChat[], name: string, name2 = name): boolean => {
-  return table.findIndex(element => element.stompUsername === name || element.stompUsername == name2) > -1;
+const contains = (chats: Map<string, PrivateChat>, name: string, name2 = name): boolean => {
+  return chats.get(name) !== undefined || chats.get(name2) !== undefined;
 };
 
 const createNewMessage = (msg: PrivateMessageRaw): PrivateMessage => {
@@ -31,57 +34,90 @@ const createNewMessage = (msg: PrivateMessageRaw): PrivateMessage => {
 };
 
 const usePrivateMessagesState = create<PrivateMessagesState>(set => ({
-  privateChats: [],
+  privateChats: new Map<string, PrivateChat>(),
   addPrivateChat: (stompUsername, username) =>
     set(store => ({
       ...store,
       privateChats: contains(store.privateChats, stompUsername)
         ? store.privateChats
-        : [
-            ...store.privateChats,
-            {
-              stompUsername: stompUsername,
-              username: username,
-              privateMessages: [],
-              unreadMessages: 0,
-              clearUnreadMessages: function () {
-                this.unreadMessages = 0;
-              },
+        : store.privateChats.set(stompUsername, {
+            stompUsername: stompUsername,
+            username: username,
+            typingUsers: [],
+            input: '',
+            setInput: function (data: string) {
+              this.input = data;
             },
-          ],
+            privateMessages: [],
+            unreadMessages: 0,
+            clearUnreadMessages: function () {
+              this.unreadMessages = 0;
+            },
+          }),
     })),
   removePrivateChat: stompUsername =>
-    set(store => ({
-      ...store,
-      privateChats: store.privateChats.filter(chat => chat.stompUsername !== stompUsername),
-    })),
-  addMessageToPrivateChat: msg =>
-    set(store => ({
-      ...store,
-      privateChats: contains(store.privateChats, msg.senderStompName, msg.receiverStompName)
-        ? store.privateChats.map(chat =>
-            chat.stompUsername === msg.senderStompName || chat.stompUsername === msg.receiverStompName
-              ? {
-                  ...chat,
-                  privateMessages: [...chat.privateMessages, createNewMessage(msg)],
-                  unreadMessages:
-                    chat.stompUsername === msg.senderStompName ? chat.unreadMessages + 1 : chat.unreadMessages,
-                }
-              : chat
-          )
-        : [
-            ...store.privateChats,
-            {
-              stompUsername: msg.senderStompName,
-              username: msg.senderName,
-              privateMessages: [createNewMessage(msg)],
-              unreadMessages: 1,
-              clearUnreadMessages: function () {
-                this.unreadMessages = 0;
-              },
+    set(store => {
+      const privateChats = new Map(store.privateChats);
+      privateChats.delete(stompUsername);
+      return {
+        ...store,
+        privateChats: privateChats,
+      };
+    }),
+  addMessageToPrivateChat: msg => {
+    const sysMsg = msg.type && msg.type === 'SYSTEM';
+    set(store => {
+      const privateChats = new Map(store.privateChats);
+
+      if (sysMsg) {
+        const chat = privateChats.get(msg.senderStompName);
+        if (chat) {
+          const chatTypingUsers = chat.typingUsers;
+          if (msg.message === 'typing-start') {
+            chatTypingUsers.push(msg.senderName);
+          } else {
+            chat.typingUsers = chatTypingUsers.filter(u => u !== msg.senderName);
+          }
+        }
+      } else {
+        const senderChat = privateChats.get(msg.senderStompName);
+        const receiverChat = privateChats.get(msg.receiverStompName);
+
+        if (!senderChat && !receiverChat) {
+          privateChats.set(msg.senderStompName, {
+            stompUsername: msg.senderStompName,
+            username: msg.senderName,
+            typingUsers: [],
+            input: '',
+            setInput: function (data: string) {
+              this.input = data;
             },
-          ],
-    })),
+            privateMessages: [createNewMessage(msg)],
+            unreadMessages: 1,
+            clearUnreadMessages: function () {
+              this.unreadMessages = 0;
+            },
+          });
+        } else {
+          if (senderChat) {
+            senderChat.privateMessages.push(createNewMessage(msg));
+            if (msg.senderStompName !== msg.receiverStompName) {
+              senderChat.unreadMessages += 1;
+            }
+          }
+
+          if (receiverChat && msg.senderStompName !== msg.receiverStompName) {
+            receiverChat.privateMessages.push(createNewMessage(msg));
+            receiverChat.unreadMessages += 1;
+          }
+        }
+      }
+      return {
+        ...store,
+        privateChats: privateChats,
+      };
+    });
+  },
 }));
 
 export default usePrivateMessagesState;
