@@ -2,6 +2,7 @@ import { Box, Circle, VStack } from '@chakra-ui/react';
 import { PrivateChatChannelContainer } from './PrivateChatChannelContainer';
 import usePrivateMessagesState from '../state/usePrivateMessagesState';
 import usePublicChatState from '../state/usePublicChatState';
+import { useEffect } from 'react';
 
 interface Props {
   setChannel: (channel: string) => void;
@@ -12,9 +13,11 @@ export const ChatChannelList = ({ setChannel, currentChatWindow }: Props) => {
   const { privateChats } = usePrivateMessagesState();
   const { unreadPubMessages, clearUnreadPubMessages } = usePublicChatState();
 
-  if (currentChatWindow === 'Public') {
-    if (unreadPubMessages > 0) clearUnreadPubMessages();
-  }
+  useEffect(() => {
+    if (currentChatWindow === 'Public') {
+      if (unreadPubMessages > 0) clearUnreadPubMessages();
+    }
+  });
 
   return (
     <VStack bg={'blackAlpha.900'} w={'300px'} h={'100%'} borderRadius={'20px'}>
@@ -35,7 +38,7 @@ export const ChatChannelList = ({ setChannel, currentChatWindow }: Props) => {
           bgColor: 'whatsapp.100',
         }}
       >
-                {unreadPubMessages === 0 && 'Public'}
+        {unreadPubMessages === 0 && 'Public'}
         {unreadPubMessages > 0 && <strong>Public</strong>}
         {unreadPubMessages > 0 && (
           <Circle

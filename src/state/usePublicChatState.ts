@@ -1,7 +1,12 @@
 import { create } from 'zustand';
+import { ChatUser } from '../model/User';
 
 interface PublicChatState {
   messages: PublicMessage[];
+  publicChatUsers: ChatUser[];
+  setUsers: (users: string[]) => void;
+  joinUser: (chatUser: string) => void;
+  removeUser: (chatUser: string) => void;
   typingUsers: string[];
   input: string;
   setInput: (data: string) => void;
@@ -12,6 +17,21 @@ interface PublicChatState {
 
 const usePublicChatState = create<PublicChatState>(set => ({
   messages: [],
+  publicChatUsers: [],
+  setUsers: newUsers => set(store => ({
+    ...store,
+    publicChatUsers: newUsers.map(u => ({username: u, stompUsername: u})),
+  })),
+  joinUser: user =>
+    set(store => ({
+      ...store,
+      publicChatUsers: [...store.publicChatUsers, {username: user, stompUsername: user}],
+    })),
+  removeUser: user =>
+    set(store => ({
+      ...store,
+      publicChatUsers: store.publicChatUsers.filter(u => u.stompUsername !== user),
+    })),
   typingUsers: [],
   input: '',
   setInput: data =>

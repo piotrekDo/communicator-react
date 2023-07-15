@@ -5,3 +5,8 @@ export interface User {
   jwtToken: string;
   jwtExpiresAt: Date;
 }
+
+export interface ChatUser {
+  username: string;
+  stompUsername?: string;
+}
