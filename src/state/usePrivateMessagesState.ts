@@ -16,6 +16,7 @@ interface PrivateMessagesState {
   addPrivateChat: (stompUsername: string, username: string) => void;
   removePrivateChat: (stompUsername: string) => void;
   addMessageToPrivateChat: (msg: PrivateMessageRaw) => void;
+  userLeavePriv: (stompUsername: string) => void;
 }
 
 const contains = (chats: Map<string, PrivateChat>, name: string, name2 = name): boolean => {
@@ -118,6 +119,22 @@ const usePrivateMessagesState = create<PrivateMessagesState>(set => ({
       };
     });
   },
+  userLeavePriv: user =>
+    set(store => {
+      const userChat = store.privateChats.get(user);
+      if (userChat) {
+        userChat.privateMessages.push({
+          type: 'SYSTEM-LEAVE',
+          senderName: user,
+          senderStompName: user,
+          receiverStopName: user,
+          message: '',
+          time: new Date(),
+          wasRead: false
+        })
+      }
+      return store;
+    }),
 }));
 
 export default usePrivateMessagesState;

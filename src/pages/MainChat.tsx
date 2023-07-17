@@ -26,9 +26,9 @@ export const MainChat = () => {
     setInput: setInputPublic,
     addPublicMessage,
     setUsers,
-    removeUser,
+    removeUser: removeUserPublic,
   } = usePublicChatState();
-  const { privateChats, addMessageToPrivateChat, addPrivateChat } = usePrivateMessagesState();
+  const { privateChats, addMessageToPrivateChat, addPrivateChat, userLeavePriv } = usePrivateMessagesState();
   const [isSocketInitialized, setIsSocketInitialized] = useState(false);
 
   const socket = useWebSocket(
@@ -41,7 +41,8 @@ export const MainChat = () => {
       if (msg.type === 'SYSTEM' && msg.senderName === 'SYSTEM-JOIN') {
         setUsers(msg.message);
       } else if (msg.type === 'SYSTEM' && msg.senderName === 'SYSTEM-LEAVE') {
-        removeUser(msg.message);
+        removeUserPublic(msg.message);
+        userLeavePriv(msg.message);
       } else {
         addPublicMessage(msg);
       }

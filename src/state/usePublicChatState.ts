@@ -15,22 +15,34 @@ interface PublicChatState {
   clearUnreadPubMessages: () => void;
 }
 
+const addLeaveMessage = (user: string): PublicMessage => {
+  return {
+    type: 'SYSTEM-LEAVE',
+    senderName: user,
+    senderStompName: user,
+    message: '',
+    time: new Date(),
+  };
+};
+
 const usePublicChatState = create<PublicChatState>(set => ({
   messages: [],
   publicChatUsers: [],
-  setUsers: newUsers => set(store => ({
-    ...store,
-    publicChatUsers: newUsers.map(u => ({username: u, stompUsername: u})),
-  })),
+  setUsers: newUsers =>
+    set(store => ({
+      ...store,
+      publicChatUsers: newUsers.map(u => ({ username: u, stompUsername: u })),
+    })),
   joinUser: user =>
     set(store => ({
       ...store,
-      publicChatUsers: [...store.publicChatUsers, {username: user, stompUsername: user}],
+      publicChatUsers: [...store.publicChatUsers, { username: user, stompUsername: user }],
     })),
   removeUser: user =>
     set(store => ({
       ...store,
       publicChatUsers: store.publicChatUsers.filter(u => u.stompUsername !== user),
+      messages: [...store.messages, addLeaveMessage(user)],
     })),
   typingUsers: [],
   input: '',

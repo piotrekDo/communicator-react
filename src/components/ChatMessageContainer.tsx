@@ -10,11 +10,13 @@ interface Props {
 }
 
 export const ChatMessageContainer = ({ msg, prevName, prevTime, setChannel }: Props) => {
-  const {privateChats, addPrivateChat} = usePrivateMessagesState();
+  const { privateChats, addPrivateChat } = usePrivateMessagesState();
   const { user } = useUserState();
   const isUser = msg.senderStompName === user!.stompUsername;
 
   if (!msg.time) return null;
+
+  const isSysLeaveMsg = msg.type && msg.type === 'SYSTEM-LEAVE'
 
   const prevMsgTime = prevTime ? prevTime : new Date('');
 
@@ -34,27 +36,38 @@ export const ChatMessageContainer = ({ msg, prevName, prevTime, setChannel }: Pr
           </strong>
         </Text>
       )}
-      <Box width={'fit-content'} alignSelf={isUser ? 'end' : 'start'}>
-        {((!isUser && prevName != msg.senderName) || (!isUser && displayTime)) && (
-          <Button color={'wheat'} pt={'20px'} mb={'5px'} onClick={() => {
-            addPrivateChat(msg.senderStompName, msg.senderName);
-            setChannel(msg.senderStompName);
-          }}>
+      <Box width={!isSysLeaveMsg ? 'fit-content' : '100%'} alignSelf={isUser ? 'end' : 'start'}>
+        {!msg.type && ((!isUser && prevName != msg.senderName) || (!isUser && displayTime)) && (
+          <Button
+            color={'wheat'}
+            pt={'20px'}
+            mb={'5px'}
+            onClick={() => {
+              addPrivateChat(msg.senderStompName, msg.senderName);
+              setChannel(msg.senderStompName);
+            }}
+          >
             {msg.senderName}
           </Button>
         )}
-        <Text
-          fontSize={'1.3rem'}
-          color={'white'}
-          borderRadius={'20px'}
-          py={2}
-          px={5}
-          // bg={isUser ? 'whatsapp.600' : 'facebook.700'}
-          bg={isUser ? 'whatsapp.700' : 'facebook.700'}
-
-        >
-          {msg.message}
-        </Text>
+        {!msg.type && (
+          <Text
+            fontSize={'1.3rem'}
+            color={'white'}
+            borderRadius={'20px'}
+            py={2}
+            px={5}
+            // bg={isUser ? 'whatsapp.600' : 'facebook.700'}
+            bg={isUser ? 'whatsapp.700' : 'facebook.700'}
+          >
+            {msg.message}
+          </Text>
+        )}
+        {isSysLeaveMsg && (
+          <Text width={'100%'} textAlign={'center'} fontSize={'1.3rem'} color={'white'} borderRadius={'20px'} py={2} px={5}>
+            {msg.senderName} opuścił czat
+          </Text>
+        )}
       </Box>
     </Flex>
   );
