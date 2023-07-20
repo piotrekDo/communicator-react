@@ -22,6 +22,24 @@ export const ChatChannelList = ({ setChannel, currentChatWindow }: Props) => {
   return (
     <VStack bg={'blackAlpha.900'} w={'300px'} h={'100%'} borderRadius={'20px'}>
       <Box
+      onClick={() => setChannel('new-custom')}
+        border={'3px solid white'}
+        borderRadius={'20px'}
+        px={'5px'}
+        py={'2px'}
+        mt={'10px'}
+        w={'60%'}
+        color={'white'}
+        textAlign={'center'}
+        cursor={'pointer'}
+        _hover={{
+          color: 'black',
+          bg: 'white',
+        }}
+      >
+        NOWA GRUPA
+      </Box>
+      <Box
         position={'relative'}
         bgColor={currentChatWindow === 'Public' ? 'whatsapp.100' : 'whatsapp.500'}
         color={currentChatWindow === 'Public' ? 'whatsapp.700' : 'white'}

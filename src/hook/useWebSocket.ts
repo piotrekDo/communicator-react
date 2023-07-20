@@ -11,15 +11,20 @@ const useWebSocket = (
   const clientRef = useRef<CompatClient | null>(null);
   const [webSocketClient, setWebSocketClient] = useState<Client | null>(null);
 
+  const headers = {
+    Authorization: 'Bearer ' + jwtToken
+  }
+
+  const subscribeToCustomPublicChat = (channelName: string ,onMessageReceivedFunc: any) => {
+    if(!webSocketClient) return;
+    webSocketClient.subscribe(`/global/${channelName}`, onMessageReceivedFunc, headers)
+  }
+
   useEffect(() => {
     const initializeWebSocket = async () => {
       const socket = new WebSocket(`ws://localhost:8080/websocket-connect?user=${userName}`);
       const stompClient = Stomp.over(socket);
       clientRef.current = stompClient;
-
-      const headers = {
-        Authorization: 'Bearer ' + jwtToken
-      }
 
       clientRef.current.connect( headers,
         (frame: Frame) => {
@@ -42,7 +47,7 @@ const useWebSocket = (
     };
   }, []);
 
-  return webSocketClient;
+  return {webSocketClient, subscribeToCustomPublicChat};
 };
 
 export default useWebSocket;

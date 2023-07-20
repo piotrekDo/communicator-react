@@ -1,4 +1,4 @@
-import { Box, HStack, VStack } from '@chakra-ui/react';
+import { Box, HStack, Heading, VStack } from '@chakra-ui/react';
 import useUserState from '../state/useUserState';
 import { useNavigate } from 'react-router-dom';
 import { Navbar } from '../components/Navbar';
@@ -11,6 +11,7 @@ import { ChatChannelList } from '../components/ChatChannelList';
 import usePrivateMessagesState from '../state/usePrivateMessagesState';
 import { ChatWindowHeader } from '../components/ChatWindowHeader';
 import { PublicUsersList } from '../components/PublicUsersList';
+import { NewGroupForm } from '../components/NewGroupForm';
 
 export const MainChat = () => {
   const navigate = useNavigate();
@@ -31,7 +32,7 @@ export const MainChat = () => {
   const { privateChats, addMessageToPrivateChat, addPrivateChat, userLeavePriv } = usePrivateMessagesState();
   const [isSocketInitialized, setIsSocketInitialized] = useState(false);
 
-  const socket = useWebSocket(
+  const { webSocketClient, subscribeToCustomPublicChat } = useWebSocket(
     user!.username,
     user!.jwtToken,
     setStompUserName,
@@ -59,10 +60,10 @@ export const MainChat = () => {
     return null;
   }
   useEffect(() => {
-    if (socket) {
+    if (webSocketClient) {
       setIsSocketInitialized(true);
     }
-  }, [socket]);
+  }, [webSocketClient]);
 
   if (!isSocketInitialized) return <div>LOADING</div>;
 
@@ -71,9 +72,13 @@ export const MainChat = () => {
       Authorization: 'Bearer ' + user!.jwtToken,
     };
     if (currentChatWindow === 'Public') {
-      socket!.publish({ destination: '/websocket/global', headers, body: JSON.stringify(message) });
+      webSocketClient!.publish({ destination: '/websocket/global', headers, body: JSON.stringify(message) });
+    } else if (currentChatWindow.includes('custom')) {
+      //..............
+      //..............
+      //..............
     } else {
-      socket!.publish({ destination: '/websocket/priv', headers, body: JSON.stringify(message) });
+      webSocketClient!.publish({ destination: '/websocket/priv', headers, body: JSON.stringify(message) });
     }
   };
 
@@ -93,6 +98,10 @@ export const MainChat = () => {
     setChatWindowView('messages');
   };
 
+  const handleCreateNewGroupChat = (groupName: string) => {
+    
+  };
+
   return (
     <VStack bg={'blackAlpha.800'} w={'100vw'} h={'100vh'}>
       <Navbar />
@@ -106,16 +115,19 @@ export const MainChat = () => {
       >
         <ChatChannelList setChannel={handleSwitchChannel} currentChatWindow={currentChatWindow} />
         <VStack bg={'blackAlpha.900'} w={'90%'} h={'100%'} borderRadius={'20px'} p={'20px'}>
-          <ChatWindowHeader
-            currentChatWindow={currentChatWindow}
-            chatWindowView={chatWindowView}
-            publicChatUsers={publicChatUsers.length}
-            setChatWindowView={setChatWindowView}
-          />
-          {chatWindowView === 'users' && (
+          {currentChatWindow === 'new-custom' && <NewGroupForm onCreateNewGroup={handleCreateNewGroupChat} />}
+          {currentChatWindow != 'new-custom' && (
+            <ChatWindowHeader
+              currentChatWindow={currentChatWindow}
+              chatWindowView={chatWindowView}
+              publicChatUsers={publicChatUsers.length}
+              setChatWindowView={setChatWindowView}
+            />
+          )}
+          {currentChatWindow != 'new-custom' && chatWindowView === 'users' && (
             <PublicUsersList publicChatUsers={publicChatUsers} addPrivateChat={handleSelectUserFromList} />
           )}
-          {chatWindowView === 'messages' && (
+          {currentChatWindow != 'new-custom' && chatWindowView === 'messages' && (
             <>
               <ChatWindow
                 messages={
