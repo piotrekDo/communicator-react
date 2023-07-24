@@ -3,6 +3,8 @@ import { PrivateChatChannelContainer } from './PrivateChatChannelContainer';
 import usePrivateMessagesState from '../state/usePrivateMessagesState';
 import usePublicChatState from '../state/usePublicChatState';
 import { useEffect } from 'react';
+import useCustomPublicChatState from '../state/useCustomPublicState';
+import { CustomGroupChannelContainer } from './CustomGroupChannelContainer';
 
 interface Props {
   setChannel: (channel: string) => void;
@@ -10,6 +12,7 @@ interface Props {
 }
 
 export const ChatChannelList = ({ setChannel, currentChatWindow }: Props) => {
+  const { customPublicChats } = useCustomPublicChatState();
   const { privateChats } = usePrivateMessagesState();
   const { unreadPubMessages, clearUnreadPubMessages } = usePublicChatState();
 
@@ -19,10 +22,13 @@ export const ChatChannelList = ({ setChannel, currentChatWindow }: Props) => {
     }
   });
 
+  console.log(privateChats)
+  console.log(customPublicChats)
+
   return (
     <VStack bg={'blackAlpha.900'} w={'300px'} h={'100%'} borderRadius={'20px'}>
       <Box
-      onClick={() => setChannel('new-custom')}
+        onClick={() => setChannel('new-custom')}
         border={'3px solid white'}
         borderRadius={'20px'}
         px={'5px'}
@@ -74,6 +80,14 @@ export const ChatChannelList = ({ setChannel, currentChatWindow }: Props) => {
           </Circle>
         )}
       </Box>
+      {Array.from(customPublicChats.values()).map(chat => (
+        <CustomGroupChannelContainer
+          key={chat.chatName}
+          chatChannel={chat}
+          setChannel={setChannel}
+          currentChatWindow={chat.chatName === currentChatWindow}
+        />
+      ))}
       {Array.from(privateChats.values()).map(chat => (
         <PrivateChatChannelContainer
           key={chat.stompUsername}

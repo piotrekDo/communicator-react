@@ -15,7 +15,7 @@ export const ChatSendMessageForm = ({ user, chatWindow, inputField, inputRef, pu
   const { addMessageToPrivateChat } = usePrivateMessagesState();
   const [input, setInput] = useState('');
   const [typingStatus, setTypingStatus] = useState<'ilde' | 'typing'>('ilde');
- 
+
   useEffect(() => {
     setInput(inputField);
     if (inputField !== '') setTypingStatus('typing');
@@ -48,14 +48,14 @@ export const ChatSendMessageForm = ({ user, chatWindow, inputField, inputRef, pu
     }
   }, [input]);
 
-  const handleSubmitPublicMessage = (data: string) => {
+  const handleSubmitMessage = (data: string) => {
     if (!user || !user.stompUsername) return;
     if (!publish) {
-      console.error('socket.publish jest niezdefiniowane.');
+      console.error('socket.publish is undefined.');
       return;
     }
     let message;
-    if (chatWindow === 'Public') {
+    if (chatWindow === 'Public' || chatWindow.includes('custom')) {
       message = {
         senderName: user.username,
         senderStompName: user.stompUsername,
@@ -86,7 +86,7 @@ export const ChatSendMessageForm = ({ user, chatWindow, inputField, inputRef, pu
   const handleFormSubmit = (data: FormEvent<HTMLFormElement>) => {
     data.preventDefault();
     if (input.trim() !== '') {
-      handleSubmitPublicMessage(input);
+      handleSubmitMessage(input);
     }
     setInput('');
   };

@@ -12,13 +12,16 @@ const useWebSocket = (
   const [webSocketClient, setWebSocketClient] = useState<Client | null>(null);
 
   const headers = {
-    Authorization: 'Bearer ' + jwtToken
-  }
+    Authorization: 'Bearer ' + jwtToken,
+  };
 
-  const subscribeToCustomPublicChat = (channelName: string ,onMessageReceivedFunc: any) => {
-    if(!webSocketClient) return;
-    webSocketClient.subscribe(`/global/${channelName}`, onMessageReceivedFunc, headers)
-  }
+  const subscribeToCustomPublicChat = (channelName: string, onMessageReceivedFunc: any) => {
+    if (!webSocketClient) {
+      console.error('NO WEBSOCKET CLIENT');
+      return;
+    }
+    webSocketClient.subscribe(`/global/${channelName}`, onMessageReceivedFunc, headers);
+  };
 
   useEffect(() => {
     const initializeWebSocket = async () => {
@@ -26,16 +29,14 @@ const useWebSocket = (
       const stompClient = Stomp.over(socket);
       clientRef.current = stompClient;
 
-      clientRef.current.connect( headers,
-        (frame: Frame) => {
-          if (!clientRef.current) return;
-          const stompName = (frame.headers as { 'user-name': string })['user-name'];
-          clientRef.current.subscribe('/global', onMessageReceivedGlobal, headers);
-          clientRef.current.subscribe(`/user/priv`, onMessageReceivedPrivate, headers);
-          setStompUserName(stompName);
-          setWebSocketClient(clientRef.current);
-        }
-      );
+      clientRef.current.connect(headers, (frame: Frame) => {
+        if (!clientRef.current) return;
+        const stompName = (frame.headers as { 'user-name': string })['user-name'];
+        clientRef.current.subscribe('/global', onMessageReceivedGlobal, headers);
+        clientRef.current.subscribe(`/user/priv`, onMessageReceivedPrivate, headers);
+        setStompUserName(stompName);
+        setWebSocketClient(clientRef.current);
+      });
     };
 
     initializeWebSocket();
@@ -47,7 +48,7 @@ const useWebSocket = (
     };
   }, []);
 
-  return {webSocketClient, subscribeToCustomPublicChat};
+  return { webSocketClient, subscribeToCustomPublicChat };
 };
 
 export default useWebSocket;
