@@ -18,6 +18,12 @@ import { AddUserToChatForm } from '../components/AddUserToChatForm';
 export const MainChat = () => {
   const navigate = useNavigate();
   const { user, setStompUserName } = useUserState();
+
+  if (!user) {
+    navigate('/');
+    return null;
+  }
+
   const [currentChatWindow, setChatWindow] = useState<string>('Public');
   const [chatWindowView, setChatWindowView] = useState<'messages' | 'users' | 'add-user'>('messages');
   const chatInputRef = useRef<HTMLInputElement>(null);
@@ -36,45 +42,42 @@ export const MainChat = () => {
     useCustomPublicChatState();
   const [refresh, setRefresh] = useState(false);
   const [isSocketInitialized, setIsSocketInitialized] = useState(false);
-
   const { webSocketClient, subscribeToCustomPublicChat } = useWebSocket(
     user!.username,
     user!.jwtToken,
     setStompUserName,
-    (m: any) => {
-      const msg = JSON.parse(m.body);
-      console.log(msg);
-      if (msg.type === 'SYSTEM' && msg.senderName === 'SYSTEM-JOIN') {
-        setUsers(msg.message);
-      } else if (msg.type === 'SYSTEM' && msg.senderName === 'SYSTEM-LEAVE') {
-        removeUserPublic(msg.message);
-        userLeavePriv(msg.message);
-      } else {
-        addPublicMessage(msg);
-      }
-    },
-    (m: any) => {
-      const msg = JSON.parse(m.body);
-      console.log(msg);
-      if (msg.type === 'SYSTEM' && msg.senderName === 'CUSTOM-CHAT-JOIN') {
-        const chatRoomName = msg.message;
-        addCustomPublicChat(chatRoomName);
-        subscribeToCustomPublicChat(chatRoomName, (m: any) => {
-          const newMessage = JSON.parse(m.body);
-          console.log(newMessage);
-          addMessageToCustomPublicChat(chatRoomName, newMessage);
-          setRefresh(state => !state);
-        });
-      } else {
-        addMessageToPrivateChat(JSON.parse(m.body));
-      }
-    }
+    handlePublicMessage,
+    handlePrivMessage
   );
 
-  if (!user) {
-    navigate('/');
-    return null;
+  function handlePublicMessage(m: any) {
+    const msg = JSON.parse(m.body);
+    if (msg.type === 'SYSTEM' && msg.senderName === 'SYSTEM-JOIN') {
+      setUsers(msg.message);
+    } else if (msg.type === 'SYSTEM' && msg.senderName === 'SYSTEM-LEAVE') {
+      removeUserPublic(msg.message);
+      userLeavePriv(msg.message);
+    } else {
+      addPublicMessage(msg);
+    }
   }
+
+  function handlePrivMessage(m: any) {
+    const msg = JSON.parse(m.body);
+    if (msg.type === 'SYSTEM' && msg.senderName === 'CUSTOM-CHAT-JOIN') {
+      const chatRoomName = msg.message;
+      addCustomPublicChat(chatRoomName);
+      subscribeToCustomPublicChat(chatRoomName, (m: any) => {
+        const newMessage = JSON.parse(m.body);
+        console.log(newMessage);
+        addMessageToCustomPublicChat(chatRoomName, newMessage);
+        setRefresh(state => !state);
+      });
+    } else {
+      addMessageToPrivateChat(JSON.parse(m.body));
+    }
+  }
+
   useEffect(() => {
     if (webSocketClient) {
       setIsSocketInitialized(true);
@@ -124,7 +127,7 @@ export const MainChat = () => {
       const msg = JSON.parse(m.body);
       console.log(msg);
       if (msg.type === 'SYSTEM' && msg.senderName === 'SYSTEM-JOIN') {
-        customPublicChats.get(groupName)?.joinUser(user.username, user.username)
+        customPublicChats.get(groupName)?.joinUser(user.username, user.username);
       }
       addMessageToCustomPublicChat(groupName, msg);
       setRefresh(state => !state);
@@ -160,12 +163,23 @@ export const MainChat = () => {
             <ChatWindowHeader
               currentChatWindow={currentChatWindow}
               chatWindowView={chatWindowView}
-              publicChatUsers={currentChatWindow === 'Public' ? publicChatUsers.length : customPublicChats.get(currentChatWindow)?.customChatUsers.length || 0}
+              publicChatUsers={
+                currentChatWindow === 'Public'
+                  ? publicChatUsers.length
+                  : customPublicChats.get(currentChatWindow)?.customChatUsers.length || 0
+              }
               setChatWindowView={setChatWindowView}
             />
           )}
           {currentChatWindow != 'new-custom' && chatWindowView === 'users' && (
-            <PublicUsersList publicChatUsers={currentChatWindow === 'Public' ? publicChatUsers : (customPublicChats.get(currentChatWindow)?.customChatUsers || [])} addPrivateChat={handleSelectUserFromList} />
+            <PublicUsersList
+              publicChatUsers={
+                currentChatWindow === 'Public'
+                  ? publicChatUsers
+                  : customPublicChats.get(currentChatWindow)?.customChatUsers || []
+              }
+              addPrivateChat={handleSelectUserFromList}
+            />
           )}
           {currentChatWindow != 'new-custom' && chatWindowView === 'messages' && (
             <>

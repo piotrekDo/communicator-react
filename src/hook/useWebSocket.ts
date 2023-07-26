@@ -15,14 +15,6 @@ const useWebSocket = (
     Authorization: 'Bearer ' + jwtToken,
   };
 
-  const subscribeToCustomPublicChat = (channelName: string, onMessageReceivedFunc: any) => {
-    if (!webSocketClient) {
-      console.error('NO WEBSOCKET CLIENT');
-      return;
-    }
-    webSocketClient.subscribe(`/global/${channelName}`, onMessageReceivedFunc, headers);
-  };
-
   useEffect(() => {
     const initializeWebSocket = async () => {
       const socket = new WebSocket(`ws://localhost:8080/websocket-connect?user=${userName}`);
@@ -47,6 +39,14 @@ const useWebSocket = (
       }
     };
   }, []);
+
+  const subscribeToCustomPublicChat = (channelName: string, onMessageReceivedFunc: any) => {
+    if (!webSocketClient) {
+      console.error('NO WEBSOCKET CLIENT');
+      return;
+    }
+    webSocketClient.subscribe(`/global/${channelName}`, onMessageReceivedFunc, headers);
+  };
 
   return { webSocketClient, subscribeToCustomPublicChat };
 };

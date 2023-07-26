@@ -22,9 +22,6 @@ export const ChatChannelList = ({ setChannel, currentChatWindow }: Props) => {
     }
   });
 
-  console.log(privateChats)
-  console.log(customPublicChats)
-
   return (
     <VStack bg={'blackAlpha.900'} w={'300px'} h={'100%'} borderRadius={'20px'}>
       <Box

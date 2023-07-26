@@ -23,32 +23,35 @@ export const ChatWindow = ({ messages, typingUsers, setChannel }: Props) => {
     }
   };
 
-  const filteredUsers = typingUsers.filter((u) => u !== user?.username);
+  const filteredUsers = typingUsers.filter(u => u !== user?.username);
 
   return (
-    <VStack w="100%" h="100%" py="10px" px="20px" overflowY="scroll" ref={chatWindowRef}>
+    <VStack w='100%' h='100%' py='10px' px='20px' overflowY='scroll' ref={chatWindowRef}>
       {messages.length === 0 ? (
-        <VStack h="60%" justifyContent="center">
-          <Box color="white" fontSize="4rem">
+        <VStack h='60%' justifyContent='center'>
+          <Box color='white' fontSize='4rem'>
             <em>Brak wiadomości</em>
           </Box>
         </VStack>
       ) : (
-        <VStack w="100%">
-          {messages.map((m, index) => (
-            <ChatMessageContainer
-              key={index}
-              msg={m}
-              prevName={index === 0 ? '' : messages[index - 1].senderName}
-              prevTime={index === 0 ? null : messages[index - 1].time}
-              setChannel={setChannel}
-            />
-          ))}
+        <VStack w={'100%'} h={'100%'} justifyContent={'space-between'}>
+          <VStack w='100%'>
+            {messages.map((m, index) => (
+              <ChatMessageContainer
+                key={index}
+                msg={m}
+                prevName={index === 0 ? '' : messages[index - 1].senderName}
+                prevTime={index === 0 ? null : messages[index - 1].time}
+                setChannel={setChannel}
+              />
+            ))}
+          </VStack>
+          <Box color='white'>
+            {filteredUsers.join(' ')}{' '}
+            {filteredUsers.length > 0 ? (filteredUsers.length === 1 ? ' pisze' : 'piszą') : ''}
+          </Box>
         </VStack>
       )}
-      <Box color="white">
-        {filteredUsers.join(' ')} {filteredUsers.length > 0 ? (filteredUsers.length === 1 ? ' pisze' : 'piszą') : ''}
-      </Box>
     </VStack>
   );
 };
