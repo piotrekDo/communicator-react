@@ -50,6 +50,8 @@ export const MainChat = () => {
     handlePrivMessage
   );
 
+  const [newGroupRequest, setNewGroupRequest] = useState('');
+
   function handlePublicMessage(m: any) {
     const msg = JSON.parse(m.body);
     if (msg.type === 'SYSTEM' && msg.senderName === 'SYSTEM-JOIN') {
@@ -66,13 +68,7 @@ export const MainChat = () => {
     const msg = JSON.parse(m.body);
     if (msg.type === 'SYSTEM' && msg.senderName === 'CUSTOM-CHAT-JOIN') {
       const chatRoomName = msg.message;
-      addCustomPublicChat(chatRoomName);
-      subscribeToCustomPublicChat(chatRoomName, (m: any) => {
-        const newMessage = JSON.parse(m.body);
-        console.log(newMessage);
-        addMessageToCustomPublicChat(chatRoomName, newMessage);
-        setRefresh(state => !state);
-      });
+      setNewGroupRequest(chatRoomName)
     } else {
       addMessageToPrivateChat(JSON.parse(m.body));
     }
@@ -83,6 +79,13 @@ export const MainChat = () => {
       setIsSocketInitialized(true);
     }
   }, [webSocketClient]);
+
+  useEffect(() => {
+    if(newGroupRequest) {
+      handleCreateNewGroupChat(newGroupRequest);
+      setNewGroupRequest('')
+    }
+  }, [newGroupRequest])
 
   if (!isSocketInitialized) return <div>LOADING</div>;
 

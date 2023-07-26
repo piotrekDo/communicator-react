@@ -24,10 +24,10 @@ const useWebSocket = (
       clientRef.current.connect(headers, (frame: Frame) => {
         if (!clientRef.current) return;
         const stompName = (frame.headers as { 'user-name': string })['user-name'];
+        setWebSocketClient(clientRef.current);
+        setStompUserName(stompName);
         clientRef.current.subscribe('/global', onMessageReceivedGlobal, headers);
         clientRef.current.subscribe(`/user/priv`, onMessageReceivedPrivate, headers);
-        setStompUserName(stompName);
-        setWebSocketClient(clientRef.current);
       });
     };
 
